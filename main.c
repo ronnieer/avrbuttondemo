@@ -24,6 +24,7 @@
 
 int main(void){
     init_serial();
+
     millis_init();
     sei();
 
@@ -33,10 +34,26 @@ int main(void){
     BIT_CLEAR(DDRB,BUTTON_PIN); // INPUT MODE
     BIT_SET(PORTB,BUTTON_PIN); 
 
-    // DATA DIRECTION = avgör mode
+    // DATA DIRECTION REGISTER = avgör mode
     // om output så skickar vi  1 eller 0 på motsvarande pinne på PORT
     // om input så läser vi  1 eller 0 på motsvarande pinne på PIN
+    bool isOn = false;
     while(1){
+        // Om kanppen är tryct så LYS
+        // annars lys inte
+        // PIND PINB
+        if(!BIT_CHECK(PINB, BUTTON_PIN)){ // KLICKAD!
+            _delay_ms(100);
+            isOn = !isOn;
+//            printf("SETTTING\n");
+        }
+        if(isOn)
+            BIT_SET(PORTB, LED_PIN); 
+        else
+            BIT_CLEAR(PORTB, LED_PIN); 
+
+   //     _delay_ms(1000);
+        
     }
     return 0;
 }
