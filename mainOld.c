@@ -6,13 +6,13 @@
 #include "uart.h"
 #include "millis.h"
 
-// https://wokwi.com/projects/365047092561218561
+// https://wokwi.com/projects/374741122606566401
 
 // B (digital pin 8 to 13)
 // C (analog input pins)
 // D (digital pins 0 to 7)
-#define LED_PIN 2
-#define BUTTON_PIN 1
+#define LED_PIN 0
+#define MOTIONSENSOR_PIN 2
 
 #define BIT_SET(a, b) ((a) |= (1ULL << (b)))
 #define BIT_CLEAR(a,b) ((a) &= ~(1ULL<<(b)))
@@ -20,31 +20,36 @@
 #define BIT_CHECK(a,b) (!!((a) & (1ULL<<(b)))) 
 
 
-#define BUTTON_IS_CLICKED(PINB,BUTTON_PIN) !BIT_CHECK(PINB,BUTTON_PIN)
+
+
+volatile bool isOn = false;
+
+
+ISR(INT0_vect){
+    isOn = !isOn;
+}
 
 int main(void){
     init_serial();
 
-    millis_init();
+//    millis_init();
+
+    EICRA |= (1 << ISC01) ||  (1 << ISC00);
+    EIMSK |= (1 << INT0  );                                 /* enable INT0 */
     sei();
 
     BIT_SET(DDRB,LED_PIN); //OUTPUT MODE
 
     //Sätt till INPUT_PULLUP
-    BIT_CLEAR(DDRB,BUTTON_PIN); // INPUT MODE
-    BIT_SET(PORTB,BUTTON_PIN); 
+    BIT_CLEAR(DDRD,MOTIONSENSOR_PIN); // INPUT MODE
+    BIT_SET(PORTD,MOTIONSENSOR_PIN); 
+
 
     // DATA DIRECTION REGISTER = avgör mode
     // om output så skickar vi  1 eller 0 på motsvarande pinne på PORT
     // om input så läser vi  1 eller 0 på motsvarande pinne på PIN
-    bool isOn = false;
     while(1){
-        // Om kanppen är tryct så LYS
-        // annars lys inte
-        // PIND PINB
-        if(!BIT_CHECK(PINB, BUTTON_PIN)){ // KLICKAD!
-            isOn = !isOn;
-        }
+
         if(isOn)
             BIT_SET(PORTB, LED_PIN); 
         else
